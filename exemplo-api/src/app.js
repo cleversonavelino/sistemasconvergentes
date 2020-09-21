@@ -57,4 +57,6 @@ app.use((error, req, res, next) => {
     res.status(error.httpStatusCode).json(error)
 })
 
-app.listen(data['port'])
+//app.listen(data['port'])
+var porta = process.env.PORT || 80;
+app.listen(porta);
