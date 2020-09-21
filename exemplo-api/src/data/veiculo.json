@@ -1,0 +1,12 @@
+[{
+    "guidveiculo":"1",
+    "marca":"VW",
+    "modelo":"POLO"
+},
+{
+    "guidveiculo":"2",
+    "marca":"FIAT",
+    "modelo":"ARGO",
+    "image":"url"
+    
+}]
