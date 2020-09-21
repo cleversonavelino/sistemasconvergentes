@@ -10,39 +10,36 @@ var cors = require('cors')
 
 app.use(cors())
 
-let env = process.env.NODE_ENV;
-console.log(env)
-if (env == undefined) {
-    env = 'dev';
-}
+//let env = process.env.NODE_ENV;
+//if (env == undefined) {
+//    env = 'dev';
+//}
 
-let data;
+//let data;
 
-try {
-    let fileContents = fs.readFileSync('./src/resources/' + env + '.yaml', 'utf8');
-    data = yaml.safeLoad(fileContents);
-
-    console.log(data['port']);
-} catch (e) {
-    console.log(e);
-}
+//try {
+//    let fileContents = fs.readFileSync('./src/resources/' + env + '.yaml', 'utf8');
+//    data = yaml.safeLoad(fileContents);    
+//} catch (e) {
+//    console.log(e);
+//}
 
 const veiculos = require('./routes/veiculos.route');
 
-const blockedIps = ['192.168.15.161']
+//const blockedIps = ['192.168.15.161']
 
-app.use(function (req, res, next) {
-    var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
-    if (ip.substr(0, 7) == "::ffff:") {
-        ip = ip.substr(7)
-    }
+//app.use(function (req, res, next) {
+//    var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
+//    if (ip.substr(0, 7) == "::ffff:") {
+//        ip = ip.substr(7)
+//    }
 
-    if (blockedIps.includes(ip)) {
-        return res.send('IP bloqueado')
-    }
-
-    return next()
-})
+//    if (blockedIps.includes(ip)) {
+//        return res.send('IP bloqueado')
+//    }
+//
+//    return next()
+//})
 
 //ler o arquivo documento.doc do c:\ e copiar para a pasta storage
 //fsextra.move('/Users/CLEVERSONAVELINOFerr/Desktop/softwares/documento.doc', './src/storage/documento.doc', function (err) {
@@ -59,4 +56,5 @@ app.use((error, req, res, next) => {
 
 //app.listen(data['port'])
 var porta = process.env.PORT || 80;
+console.log(porta)
 app.listen(porta);
