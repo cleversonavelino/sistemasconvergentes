@@ -1,6 +1,7 @@
 var formidable = require('formidable');
 const fsextra = require('fs-extra')
 const fs = require('fs');
+var MongoClient = require('mongodb').MongoClient;
 
 module.exports = () => {
     const controller = {};
@@ -8,7 +9,24 @@ module.exports = () => {
     const veiculos = [];
     const imagens = [];
 
-    controller.listarVeiculos = (req, res) => res.status(200).json(veiculos);
+    var collectionVeiculos;
+    var uri = "mongodb://positivo:123456ab@cluster0-shard-00-00.2bftd.mongodb.net:27017,cluster0-shard-00-01.2bftd.mongodb.net:27017,cluster0-shard-00-02.2bftd.mongodb.net:27017/sistemasconvergentes?ssl=true&replicaSet=atlas-fbg0ts-shard-0&authSource=admin&retryWrites=true&w=majority";
+    MongoClient.connect(uri, function (err, client) {
+        if (err) {
+            console.log(err)
+        } 
+
+        const db = client.db('sistemasconvergentes')
+        collectionVeiculos = db.collection('veiculos')       
+
+        //client.close();
+    });
+
+    controller.listarVeiculos = (req, res) => {
+        collectionVeiculos.find().toArray((err, veiculos) => {
+            res.status(200).json(veiculos);
+        })
+    }    
 
     /*  o usuário envia uma foto do veiculo  */
     controller.upload = (req, res, next) => {
@@ -27,8 +45,8 @@ module.exports = () => {
             }
 
             if (type.indexOf("image/png") != -1) {
-                console.log("vai mover o arquivo");              
-                
+                console.log("vai mover o arquivo");
+
                 try {
                     await fsextra.move(files.arquivo.path, './src/storage/' + files.arquivo.name)
                     console.log("terminou de mover");
@@ -42,7 +60,7 @@ module.exports = () => {
                     error.code = 'ERR004';
                     return next(error)
                 }
-                
+
                 /*promise.then(function() {
                     console.log("terminou de mover");
                     res.write('Arquivo Carregado');
@@ -54,7 +72,7 @@ module.exports = () => {
                     error.httpStatusCode = 400;
                     error.code = 'ERR004';
                     return next(error)
-                }) */               
+                }) */
             } else {
                 const error = new Error()
                 error.message = "tipo do arquivo inválido"
@@ -62,12 +80,12 @@ module.exports = () => {
                 error.code = 'ERR002';
                 return next(error)
             }
-        });        
+        });
     };
 
     controller.download = (req, res, next) => {
         const { nomeArquivo } = req.params
-        
+
         try {
             let readStream = fs.createReadStream('./src/storage/' + nomeArquivo)
 
@@ -86,7 +104,15 @@ module.exports = () => {
     controller.salvarVeiculo = (req, res) => {
         const veiculo = req.body
 
-        veiculos.push(veiculo)
+        console.log(veiculo)
+
+        collectionVeiculos.insertOne(veiculo, (err, result) => {
+            if (err) {
+                console.log(err)
+            } else {
+                console.log('foi')
+            }
+        })
 
         res.status(200).send()
     };

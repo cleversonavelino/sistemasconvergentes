@@ -1,30 +1,32 @@
 const express = require('express');
-const app = express()
-app.use(express.json())
-
+const cors = require('cors')
 const fs = require('fs');
 const fsextra = require('fs-extra')
 const yaml = require('js-yaml');
 
-var cors = require('cors')
-
+const app = express()
+app.use(express.json())
 app.use(cors())
+
 
 //let env = process.env.NODE_ENV;
 //if (env == undefined) {
 //    env = 'dev';
 //}
 
-//let data;
+let data;
 
-//try {
-//    let fileContents = fs.readFileSync('./src/resources/' + env + '.yaml', 'utf8');
-//    data = yaml.safeLoad(fileContents);    
-//} catch (e) {
-//    console.log(e);
-//}
+try {
+    let fileContents = fs.readFileSync('./src/resources/endpoints.yaml', 'utf8');
+    data = yaml.safeLoad(fileContents);
+} catch (e) {
+    console.log(e);
+}
 
 const veiculos = require('./routes/veiculos.route');
+const endpoints = require('./routes/endpoints.route');
+
+
 
 //const blockedIps = ['192.168.15.161']
 
@@ -48,6 +50,9 @@ const veiculos = require('./routes/veiculos.route');
 //})
 
 app.use('/veiculo', veiculos)
+data['endpoints'].forEach(function (endpoint) {
+    app.use('/*', endpoints)
+});
 
 app.use((error, req, res, next) => {
     console.log('error')
@@ -56,5 +61,4 @@ app.use((error, req, res, next) => {
 
 //app.listen(data['port'])
 var porta = process.env.PORT || 80;
-console.log(porta)
 app.listen(porta);
