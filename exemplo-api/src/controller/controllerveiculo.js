@@ -2,31 +2,31 @@ var formidable = require('formidable');
 const fsextra = require('fs-extra')
 const fs = require('fs');
 var MongoClient = require('mongodb').MongoClient;
+var ObjectId = require("mongojs").ObjectId;
+
 
 module.exports = () => {
     const controller = {};
 
     const veiculos = [];
-    const imagens = [];
+    const imagens = [];    
 
     var collectionVeiculos;
     var uri = "mongodb://positivo:123456ab@cluster0-shard-00-00.2bftd.mongodb.net:27017,cluster0-shard-00-01.2bftd.mongodb.net:27017,cluster0-shard-00-02.2bftd.mongodb.net:27017/sistemasconvergentes?ssl=true&replicaSet=atlas-fbg0ts-shard-0&authSource=admin&retryWrites=true&w=majority";
     MongoClient.connect(uri, function (err, client) {
         if (err) {
             console.log(err)
-        } 
+        }
 
         const db = client.db('sistemasconvergentes')
-        collectionVeiculos = db.collection('veiculos')       
-
-        //client.close();
+        collectionVeiculos = db.collection('veiculos')        
     });
 
     controller.listarVeiculos = (req, res) => {
         collectionVeiculos.find().toArray((err, veiculos) => {
             res.status(200).json(veiculos);
         })
-    }    
+    }
 
     /*  o usuário envia uma foto do veiculo  */
     controller.upload = (req, res, next) => {
@@ -104,13 +104,11 @@ module.exports = () => {
     controller.salvarVeiculo = (req, res) => {
         const veiculo = req.body
 
-        console.log(veiculo)
-
         collectionVeiculos.insertOne(veiculo, (err, result) => {
             if (err) {
                 console.log(err)
             } else {
-                console.log('foi')
+                console.log("OK")
             }
         })
 
@@ -118,19 +116,31 @@ module.exports = () => {
     };
 
     controller.alterarVeiculo = (req, res) => {
-        veiculos.map((veiculo, index) => {
-            if (veiculo.guidveiculo === req.body.guidveiculo) {
-                veiculos[index] = req.body
-            }
-        });
+        const veiculo = d
+
+        var id = veiculo._id;
+        delete veiculo._id;
+
+        collectionVeiculos.updateOne({ _id: require("mongojs").ObjectId(id) }, { $set : veiculo }, (err, item) => {
+            console.log(err)
+        })
+
+        //veiculos.map((veiculo, index) => {
+        //    if (veiculo.guidveiculo === req.body.guidveiculo) {
+        //        veiculos[index] = req.body
+        //    }
+        //});
 
         res.status(200).send()
     };
 
     controller.excluirVeiculo = (req, res) => {
-        const index = req.params.index
+        //const index = req.params.index
+        //veiculos.splice(index, 1)
 
-        veiculos.splice(index, 1)
+        collectionVeiculos.deleteOne({ _id: require("mongojs").ObjectId(req.body._id) }, (err, item) => {
+            console.log(err)
+          })
 
         res.status(200).send()
     };
