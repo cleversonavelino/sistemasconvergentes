@@ -8,8 +8,7 @@ var ObjectId = require("mongojs").ObjectId;
 module.exports = () => {
     const controller = {};
 
-    const veiculos = [];
-    const imagens = [];    
+    const imagens = [];
 
     var collectionVeiculos;
     var uri = "mongodb://positivo:123456ab@cluster0-shard-00-00.2bftd.mongodb.net:27017,cluster0-shard-00-01.2bftd.mongodb.net:27017,cluster0-shard-00-02.2bftd.mongodb.net:27017/sistemasconvergentes?ssl=true&replicaSet=atlas-fbg0ts-shard-0&authSource=admin&retryWrites=true&w=majority";
@@ -19,7 +18,7 @@ module.exports = () => {
         }
 
         const db = client.db('sistemasconvergentes')
-        collectionVeiculos = db.collection('veiculos')        
+        collectionVeiculos = db.collection('veiculos')
     });
 
     controller.listarVeiculos = (req, res) => {
@@ -116,75 +115,74 @@ module.exports = () => {
     };
 
     controller.alterarVeiculo = (req, res) => {
-        const veiculo = d
+        const veiculo = req.body
 
         var id = veiculo._id;
         delete veiculo._id;
 
-        collectionVeiculos.updateOne({ _id: require("mongojs").ObjectId(id) }, { $set : veiculo }, (err, item) => {
+        collectionVeiculos.updateOne({ _id: require("mongojs").ObjectId(id) }, { $set: veiculo }, (err, item) => {
             console.log(err)
         })
-
-        //veiculos.map((veiculo, index) => {
-        //    if (veiculo.guidveiculo === req.body.guidveiculo) {
-        //        veiculos[index] = req.body
-        //    }
-        //});
 
         res.status(200).send()
     };
 
     controller.excluirVeiculo = (req, res) => {
-        //const index = req.params.index
-        //veiculos.splice(index, 1)
-
         collectionVeiculos.deleteOne({ _id: require("mongojs").ObjectId(req.body._id) }, (err, item) => {
             console.log(err)
-          })
+        })
 
         res.status(200).send()
     };
 
     controller.buscarVeiculos = (req, res) => {
         const { placa } = req.params
-
-        res.status(200).json(veiculos.filter((veiculo) => {
-            return veiculo.placa === placa;
-        }))
-    }
-
-    controller.validarUsuario = (req, res, next) => {
-        if (true) {
-            res.status(400).send()
-        }
-        return next();
+        //res.status(200).json(veiculos.filter((veiculo) => {
+        //    return veiculo.placa === placa;
+        //}))
+        collectionVeiculos.find({ placa: placa }).toArray((err, veiculos) => {
+            res.status(200).json(veiculos);
+        })
+        //collectionVeiculos.findOne({placa: placa}, (err, item) => {
+        //    res.status(200).json(item);
+        //})
     }
 
     controller.calcular = (req, res) => {
-        var valor = veiculos.reduce(function (valor, item) {
-            valor += parseInt(item.valor)
-            return valor
-        }, 0);
-
-
-        res.status(200).json(valor)
+        collectionVeiculos.find().toArray((err, veiculos) => {
+            var valor = veiculos.reduce(function (valor, item) {
+                valor += parseInt(item.valor)
+                return valor
+            }, 0);
+            res.status(200).json(valor)
+        });
     }
 
     controller.calcularipva = (req, res) => {
-        veiculos.map((veiculo) => {
-            veiculo.ipva = veiculo.valor * 0.035
-        });
+        collectionVeiculos.find().toArray((err, veiculos) => {
+            veiculos.map((veiculo) => {
+                veiculo.ipva = veiculo.valor * 0.035
 
-        res.status(200).json(veiculos)
+                var id = veiculo._id;
+                delete veiculo._id;
+
+                collectionVeiculos.updateOne({ _id: require("mongojs").ObjectId(id) }, { $set: veiculo }, (err, item) => {
+                    console.log(err)
+                })
+            });
+            res.status(200).json(veiculos)
+        });
     };
 
     controller.somatorioipva = (req, res) => {
-        var valor = veiculos.reduce(function (valor, item) {
-            valor += parseFloat(item.ipva)
-            return valor
-        }, 0);
+        collectionVeiculos.find().toArray((err, veiculos) => {
+            var valor = veiculos.reduce(function (valor, item) {
+                valor += parseFloat(item.ipva)
+                return valor
+            }, 0);
 
-        res.status(200).json(valor)
+            res.status(200).json(valor)
+        });
     }
 
     return controller;
