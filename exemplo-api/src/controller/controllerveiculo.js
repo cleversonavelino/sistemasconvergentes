@@ -1,28 +1,18 @@
 var formidable = require('formidable');
 const fsextra = require('fs-extra')
 const fs = require('fs');
-var MongoClient = require('mongodb').MongoClient;
 var ObjectId = require("mongojs").ObjectId;
 
 
 module.exports = () => {
     const controller = {};
 
-    const imagens = [];
+    const imagens = [];    
 
-    var collectionVeiculos;
-    var uri = "mongodb://positivo:123456ab@cluster0-shard-00-00.2bftd.mongodb.net:27017,cluster0-shard-00-01.2bftd.mongodb.net:27017,cluster0-shard-00-02.2bftd.mongodb.net:27017/sistemasconvergentes?ssl=true&replicaSet=atlas-fbg0ts-shard-0&authSource=admin&retryWrites=true&w=majority";
-    MongoClient.connect(uri, function (err, client) {
-        if (err) {
-            console.log(err)
-        }
-
-        const db = client.db('sistemasconvergentes')
-        collectionVeiculos = db.collection('veiculos')
-    });
-
+    const repository = require('../repository/repository')('veiculos');
+   
     controller.listarVeiculos = (req, res) => {
-        collectionVeiculos.find().toArray((err, veiculos) => {
+        repository.collection().find().toArray((err, veiculos) => {
             res.status(200).json(veiculos);
         })
     }
@@ -103,7 +93,7 @@ module.exports = () => {
     controller.salvarVeiculo = (req, res) => {
         const veiculo = req.body
 
-        collectionVeiculos.insertOne(veiculo, (err, result) => {
+        repository.collection().insertOne(veiculo, (err, result) => {
             if (err) {
                 console.log(err)
             } else {
@@ -120,7 +110,7 @@ module.exports = () => {
         var id = veiculo._id;
         delete veiculo._id;
 
-        collectionVeiculos.updateOne({ _id: require("mongojs").ObjectId(id) }, { $set: veiculo }, (err, item) => {
+        repository.collection().updateOne({ _id: require("mongojs").ObjectId(id) }, { $set: veiculo }, (err, item) => {
             console.log(err)
         })
 
@@ -128,7 +118,7 @@ module.exports = () => {
     };
 
     controller.excluirVeiculo = (req, res) => {
-        collectionVeiculos.deleteOne({ _id: require("mongojs").ObjectId(req.body._id) }, (err, item) => {
+        repository.collection().deleteOne({ _id: require("mongojs").ObjectId(req.body._id) }, (err, item) => {
             console.log(err)
         })
 
@@ -140,16 +130,16 @@ module.exports = () => {
         //res.status(200).json(veiculos.filter((veiculo) => {
         //    return veiculo.placa === placa;
         //}))
-        collectionVeiculos.find({ placa: placa }).toArray((err, veiculos) => {
+        repository.collection().find({ placa: placa }).toArray((err, veiculos) => {
             res.status(200).json(veiculos);
         })
-        //collectionVeiculos.findOne({placa: placa}, (err, item) => {
+        //repository.collection().findOne({placa: placa}, (err, item) => {
         //    res.status(200).json(item);
         //})
     }
 
     controller.calcular = (req, res) => {
-        collectionVeiculos.find().toArray((err, veiculos) => {
+        repository.collection().find().toArray((err, veiculos) => {
             var valor = veiculos.reduce(function (valor, item) {
                 valor += parseInt(item.valor)
                 return valor
@@ -159,14 +149,14 @@ module.exports = () => {
     }
 
     controller.calcularipva = (req, res) => {
-        collectionVeiculos.find().toArray((err, veiculos) => {
+        repository.collection().find().toArray((err, veiculos) => {
             veiculos.map((veiculo) => {
                 veiculo.ipva = veiculo.valor * 0.035
 
                 var id = veiculo._id;
                 delete veiculo._id;
 
-                collectionVeiculos.updateOne({ _id: require("mongojs").ObjectId(id) }, { $set: veiculo }, (err, item) => {
+                repository.collection().updateOne({ _id: require("mongojs").ObjectId(id) }, { $set: veiculo }, (err, item) => {
                     console.log(err)
                 })
             });
@@ -175,7 +165,7 @@ module.exports = () => {
     };
 
     controller.somatorioipva = (req, res) => {
-        collectionVeiculos.find().toArray((err, veiculos) => {
+        repository.collection().find().toArray((err, veiculos) => {
             var valor = veiculos.reduce(function (valor, item) {
                 valor += parseFloat(item.ipva)
                 return valor
