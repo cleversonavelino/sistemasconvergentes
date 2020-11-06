@@ -1,0 +1,10 @@
+version: "3.3"
+services:
+  exemplo-api:
+    build: exemplo-api
+    ports:
+      - "80:80"
+  autenticacao:
+    build: autenticacao
+    ports:
+      - "81:81"
