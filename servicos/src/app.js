@@ -26,7 +26,7 @@ try {
 const repositoryUsuarios = require('./repository/repository')('usuarios');
 const repositoryPermissoes = require('./repository/repository')('permissoes');
 
-app.post('/login', (req, res) => {
+/*app.post('/login', (req, res) => {
     repositoryUsuarios.collection().findOne({ login: req.body.user }, function (err, usuario) {
         if (usuario.senha === req.body.pwd) {
             const id = usuario._id; //esse id viria do banco de dados
@@ -50,7 +50,7 @@ app.post('/login', (req, res) => {
             res.status(403).json({ message: 'Login inválido!' });
         }
     });
-})
+})*/
 
 /*
  * ROLES DO SISTEMA
@@ -83,6 +83,7 @@ function verifyJWT(req, res, next) {
 }
 
 const veiculos = require('./routes/veiculos.route');
+const estacionamento = require('./routes/estacionamento.route');
 const endpoints = require('./routes/endpoints.route');
 
 //const blockedIps = ['192.168.15.161']
@@ -107,6 +108,8 @@ const endpoints = require('./routes/endpoints.route');
 //})
 
 app.use('/veiculo', verifyJWT, veiculos)
+app.use('/estacionamento', estacionamento)
+
 data['endpoints'].forEach(function (endpoint) {
     app.use('/*', endpoints)
 });

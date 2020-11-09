@@ -38,6 +38,14 @@ app.post('/login', (req, res) => {
     });
 });
 
+app.get('/usuarios/buscar/:cpf', (req, res) => {
+    const { cpf } = req.params
+
+    repositoryUsuarios.collection().find({ cpf: cpf }).toArray((err, usuario) => {
+        res.status(200).json(usuario)
+     })
+});
+
 //app.listen(data['port'])
 var porta = process.env.PORT || 81;
 app.listen(porta, '0.0.0.0');
